@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Follow the latest image built from this repository's default branch. Forks
 # and callers testing another image can override this with SOL_WALLET_IMAGE.
-IMAGE="${SOL_WALLET_IMAGE:-ghcr.io/cainiaocome/sol-wallet:master}"
+IMAGE="${SOL_WALLET_IMAGE:-ghcr.io/vibe-wallets/sol-wallet:master}"
 CONFIG_DIR="${SOL_WALLET_CONFIG_DIR:-$HOME/.config/sol-wallet}"
 
 mkdir -p "$CONFIG_DIR"

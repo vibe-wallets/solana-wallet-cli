@@ -7,11 +7,11 @@ The published v0.2 release artifact is a `linux/amd64` Docker image. This checko
 ## Release image
 
 ```bash
-docker pull ghcr.io/<owner>/sol-wallet:latest
+docker pull ghcr.io/vibe-wallets/sol-wallet:latest
 docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v "$HOME/.config/sol-wallet:/home/solwallet/.config/sol-wallet" \
-  ghcr.io/<owner>/sol-wallet:latest
+  ghcr.io/vibe-wallets/sol-wallet:latest
 ```
 
 The image defaults to the non-root `solwallet` user (UID/GID `10001`). The direct example maps the caller's UID/GID so a host directory with mode `0700` remains writable; the wrapper does this automatically. The only persistent mount is the host directory above. It contains public configuration and metadata plus one encrypted UUID-named keystore per wallet; the disposable container does not own the wallet state.
@@ -29,7 +29,7 @@ for an on-demand network check, SOL/token balances, and separate staking/lending
 position summaries. The wallet is not unlocked at startup—signing commands
 request its passphrase when needed.
 
-The wrapper defaults to `ghcr.io/cainiaocome/sol-wallet:master`, which follows
+The wrapper defaults to `ghcr.io/vibe-wallets/sol-wallet:master`, which follows
 the latest image published from the `master` branch. Set `SOL_WALLET_IMAGE` to
 use a fork, a version tag, or a specific seven-character commit tag. Set
 `SOL_WALLET_CONFIG_DIR` to override the wallet state directory.

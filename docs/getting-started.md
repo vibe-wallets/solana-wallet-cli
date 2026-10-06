@@ -20,14 +20,14 @@ local configuration directory.
 
 ## 2. Run the release image
 
-Replace `<owner>` with the GitHub owner that published the image:
+The official image is published by the `vibe-wallets` organization:
 
 ```bash
-docker pull ghcr.io/<owner>/sol-wallet:latest
+docker pull ghcr.io/vibe-wallets/sol-wallet:latest
 docker run --rm -it \
   --user "$(id -u):$(id -g)" \
   -v "$HOME/.config/sol-wallet:/home/solwallet/.config/sol-wallet" \
-  ghcr.io/<owner>/sol-wallet:latest
+  ghcr.io/vibe-wallets/sol-wallet:latest
 ```
 
 The `-v` option is important: containers are disposable, so without the mount
@@ -39,7 +39,7 @@ scripts/sol-wallet
 scripts/sol-wallet -c "balance" --json
 ```
 
-By default the wrapper runs `ghcr.io/cainiaocome/sol-wallet:master`, the
+By default the wrapper runs `ghcr.io/vibe-wallets/sol-wallet:master`, the
 latest image published from this repository's `master` branch. Set
 `SOL_WALLET_IMAGE` when using a fork, a release tag, or a specific commit tag.
 Every wrapper invocation pulls the selected image first. If Docker cannot
