@@ -1,20 +1,18 @@
-# Interactive history recall
+# Repository migration verification
 
-## Goal and implementation
+## Goal
 
-- Correct readline history ordering: disk entries remain oldest-first, but each
-  fresh readline interface receives a reversed copy, newest-first.
-- Preserve history display, persistence limits, and secret filtering.
-- Added Docker PTY regression coverage for Up/Down after Jupiter Lend status
-  and recall after restarting the shell.
-- User requested commit/push; local validation complete, publication pending.
+Verify push access and Docker CI/image publishing on
+`vibe-wallets/solana-wallet-cli`, then switch launcher and current documentation
+to the new image namespace only after successful verification.
 
-## Validation
+## Progress
 
-- All 121 unit tests, TypeScript lint/build, and all three Docker REPL PTY tests
-  passed against the rebuilt `sol-wallet:history-e2e` image.
-- Prettier, Python Black, and diff whitespace checks passed.
-- Initial PTY run failed because the new assertion expected a network guard
-  instead of the existing no-wallet error; corrected the assertion and reran
-  all three successfully. Existing Python socket/forkpty warnings remain.
-- No chain writes or package installations performed.
+- Clean starting checkout at `62bbe51`; origin already changed by user.
+- Docker workflow derives GHCR namespace from repository owner automatically.
+- Push/CI verification in progress; launcher changes deferred until CI passes.
+- GitHub services operational. Current GH_TOKEN rejected by organization policy
+  because its lifetime exceeds 366 days; public API reads work unauthenticated.
+- Keep historical CI links intact; do not change secrets or token policy.
+- Initial SSH inspection automatically added github.com to known_hosts; no
+  credentials modified. Subsequent Git commands must use strict host checking.
