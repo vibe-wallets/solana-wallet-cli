@@ -181,7 +181,8 @@ status
 address
 balance
 token list --accounts
-token balance <mint>
+token symbols
+token balance <mint|symbol>
 validators --limit 10
 stake list
 jupiter-lend status
@@ -200,7 +201,7 @@ that asks one or more Solana programs to change on-chain state. Use
 
 ```text
 send <destination> 0.001 --dry-run
-token send <mint> <destination> 1.5 --dry-run
+token send <mint|symbol> <destination> 1.5 --dry-run
 stake create 1 --validator <vote-account> --dry-run
 jupiter-lend deposit 1 --dry-run
 ```
@@ -221,7 +222,7 @@ Use this order when learning the project:
 1. `address` and `wallet info` — learn the public identity.
 2. `show config` — inspect the local cluster, RPC URL, and commitment.
 3. `status` — verify the RPC/network and see SOL and token balances.
-4. `token list --accounts` — inspect token accounts and full mint addresses.
+4. `token list --accounts` — inspect token accounts and full mint addresses, or `token symbols` for built-in aliases such as `usdc`.
 5. Run a `send ... --dry-run` against devnet — learn transaction preflight.
 6. Try `stake list` and inspect a transaction with `tx inspect <signature>`.
 7. Read [web3-concepts.md](web3-concepts.md) before using staking or lending.

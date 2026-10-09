@@ -126,24 +126,41 @@ token list
 
 Use `token list --accounts` when you need each token account address. The
 default view includes the full mint, token program, total balance, and account
-count.
+count. Recognized symbols such as USDC are shown in a separate column; the full
+mint address remains the identifier.
 
-Read one mint's balance:
+List the built-in symbols and the exact mint each one resolves to on the
+current network:
+
+```text
+token symbols
+```
+
+Read one mint's balance. You can pass a mint address or a recognized symbol:
 
 ```text
 token balance <mint-address>
+token balance usdc
 ```
 
-Send a token using its mint address and human-readable amount:
+Send a token using its mint address or a recognized symbol and a
+human-readable amount:
 
 ```text
 token send <mint-address> <destination> 1.25 --dry-run
+token send usdc <destination> 1.25 --dry-run
 ```
 
 The amount uses the mint's on-chain decimals. The CLI refuses excess decimal
 places and does not silently round. The sender supports basic checked
 transfers. Token-2022 mints with extensions are intentionally refused until
 their transfer semantics are modeled explicitly.
+
+Symbols are local aliases for a fixed, cluster-scoped mint address. They are
+never read from on-chain metadata, and `token symbols` shows the full address
+they use. The preview and receipt always include that full mint, and its owning
+program and decimals are verified on chain before a transfer. A symbol defined
+only for another network fails closed instead of reusing the wrong mint.
 
 ## Validators and native staking
 

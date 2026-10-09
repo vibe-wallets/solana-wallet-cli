@@ -3,6 +3,7 @@ import { setSessionCluster } from "../config/config.js";
 import { AppError } from "../errors/errors.js";
 import { formatSol } from "../solana/amounts.js";
 import { assertRpcCluster, rpcRequest } from "../solana/rpc.js";
+import { knownTokenSymbols } from "../solana/known-tokens.js";
 import {
   flagValue,
   hasFlag,
@@ -34,6 +35,7 @@ import {
   showHistory,
   showTokenBalance,
   showTokenList,
+  showTokenSymbols,
   showValidators,
 } from "./read-only.js";
 import { sendSol } from "./send.js";
@@ -373,14 +375,17 @@ async function executeToken(
   if (subcommand === "list") {
     rejectExtraArgs(args, 0, "token list");
     await showTokenList(context, hasFlag(command, "accounts"));
+  } else if (subcommand === "symbols") {
+    rejectExtraArgs(args, 0, "token symbols");
+    await showTokenSymbols(context);
   } else if (subcommand === "balance") {
-    rejectExtraArgs(args, 1, "token balance <mint>");
+    rejectExtraArgs(args, 1, "token balance <mint|symbol>");
     await showTokenBalance(context, args.args[0]!);
   } else if (subcommand === "send") {
     rejectExtraArgs(
       args,
       3,
-      "token send <mint> <destination> <amount> [--dry-run] [--yes]",
+      "token send <mint|symbol> <destination> <amount> [--dry-run] [--yes]",
     );
     await sendToken(
       context,
@@ -434,6 +439,7 @@ async function executeSet(
   if (field === "cluster" && (value === "mainnet" || value === "devnet")) {
     setSessionCluster(context.config, value);
     context.completion.tokenMints = [];
+    context.completion.knownTokens = knownTokenSymbols(value);
     context.completion.stakeAccounts = [];
     context.completion.recentValidators = [];
     context.output.print(

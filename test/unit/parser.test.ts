@@ -29,6 +29,7 @@ describe("wallet shell parser and completion", () => {
   it("completes nested commands and cached public values", () => {
     const topLevel = completeLine("tok", {
       tokenMints: [],
+      knownTokens: [],
       stakeAccounts: [],
       recentValidators: [],
       walletAliases: [],
@@ -38,22 +39,34 @@ describe("wallet shell parser and completion", () => {
     expect(
       completeLine("token ", {
         tokenMints: [],
+        knownTokens: [],
         stakeAccounts: [],
         recentValidators: [],
         walletAliases: [],
       })[0],
-    ).toEqual(["list", "balance", "send"]);
+    ).toEqual(["list", "symbols", "balance", "send"]);
     expect(
       completeLine("token balance ", {
         tokenMints: ["Mint111"],
+        knownTokens: [],
         stakeAccounts: [],
         recentValidators: [],
         walletAliases: [],
       })[0],
     ).toEqual(["Mint111"]);
     expect(
+      completeLine("token balance ", {
+        tokenMints: ["Mint111"],
+        knownTokens: ["usdc", "usdt"],
+        stakeAccounts: [],
+        recentValidators: [],
+        walletAliases: [],
+      })[0],
+    ).toEqual(["usdc", "usdt", "Mint111"]);
+    expect(
       completeLine("stake ", {
         tokenMints: [],
+        knownTokens: [],
         stakeAccounts: [],
         recentValidators: [],
         walletAliases: [],
@@ -62,6 +75,7 @@ describe("wallet shell parser and completion", () => {
     expect(
       completeLine("jupiter-lend ", {
         tokenMints: [],
+        knownTokens: [],
         stakeAccounts: [],
         recentValidators: [],
         walletAliases: [],
@@ -70,6 +84,7 @@ describe("wallet shell parser and completion", () => {
     expect(
       completeLine("wallet ", {
         tokenMints: [],
+        knownTokens: [],
         stakeAccounts: [],
         recentValidators: [],
         walletAliases: [],
@@ -77,6 +92,7 @@ describe("wallet shell parser and completion", () => {
     ).toContain("change-passphrase");
     const walletCache = {
       tokenMints: [],
+      knownTokens: [],
       stakeAccounts: [],
       recentValidators: [],
       walletAliases: ["daily", "savings"],
@@ -93,6 +109,7 @@ describe("wallet shell parser and completion", () => {
   it("completes supported validators and token-list flags", () => {
     const cache = {
       tokenMints: [],
+      knownTokens: [],
       stakeAccounts: [],
       recentValidators: [],
       walletAliases: [],
@@ -106,6 +123,7 @@ describe("wallet shell parser and completion", () => {
   it("completes cached validators after --validator and retains flag completion", () => {
     const cache = {
       tokenMints: [],
+      knownTokens: [],
       stakeAccounts: [],
       recentValidators: ["Vote111", "Vote222"],
       walletAliases: [],

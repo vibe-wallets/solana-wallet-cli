@@ -21,6 +21,7 @@ import {
 import type { AppConfig } from "../../config/config.js";
 import { JupiterLendError } from "../../errors/errors.js";
 import { formatUnits } from "../../solana/amounts.js";
+import { USDC_DECIMALS, USDC_MAINNET_MINT } from "../../solana/known-tokens.js";
 import { optionalRate } from "./yield.js";
 
 /**
@@ -36,9 +37,12 @@ import { optionalRate } from "./yield.js";
  * legacy SPL Token Program, six decimals, and withdrawal bounded by both the
  * user's position and protocol-reported liquidity.
  */
-export const JUPITER_LEND_USDC_MINT =
-  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" as Address;
-export const JUPITER_LEND_USDC_DECIMALS = 6;
+/**
+ * Canonical mainnet USDC identity is defined once in the shared token
+ * registry; the adapter re-exports it for its own API surface.
+ */
+export const JUPITER_LEND_USDC_MINT = USDC_MAINNET_MINT;
+export const JUPITER_LEND_USDC_DECIMALS = USDC_DECIMALS;
 export const LEGACY_SPL_TOKEN_ACCOUNT_SPACE = 165n;
 const MAINNET_GENESIS_HASH = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 

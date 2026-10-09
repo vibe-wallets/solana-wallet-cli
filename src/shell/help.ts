@@ -19,9 +19,10 @@ BALANCES AND TRANSFERS
   status                      Refresh wallet, token, and position overview
   address | balance           Show the selected address or SOL balance
   token list [--accounts]     List tokens; optionally show token accounts
-  token balance <mint>        Show a token balance by mint address
+  token symbols               List built-in token symbols for this network
+  token balance <mint|symbol> Show a token balance by mint or symbol
   send <destination> <amount> Send SOL
-  token send <mint> <to> <amount>
+  token send <mint|symbol> <to> <amount> [--dry-run] [--yes]
 
 STAKING AND LENDING
   validators                  Browse current validators
@@ -59,7 +60,7 @@ Deleting a wallet never removes chain assets. Separate backups and stake recover
     "balance\nShows the selected wallet's SOL balance. Use --verbose to include lamports.",
   send: "send <destination> <amount> [--dry-run] [--yes] [--json]",
   token:
-    "token list [--accounts]\n  Aggregates balances by mint; --accounts shows each token account.\ntoken balance <mint>\ntoken send <mint> <destination> <amount> [--dry-run] [--yes]",
+    "token list [--accounts]\n  Aggregates balances by mint; --accounts shows each token account.\ntoken symbols\n  Lists built-in symbols and their canonical mint addresses for this network.\ntoken balance <mint|symbol>\ntoken send <mint|symbol> <destination> <amount> [--dry-run] [--yes]\n\nSymbols such as usdc are local aliases for a fixed mint address, not on-chain metadata. The full mint is always shown and verified against chain data before a transfer.",
   validators:
     "validators [--limit <n>] [--include-delinquent] [--max-commission <percent>]\nDelinquent validators are excluded by default; use --include-delinquent to include them.",
   stake:

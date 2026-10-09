@@ -51,6 +51,7 @@ adapter knows those types, but it cannot unlock the keystore by itself.
 | `src/solana/amounts.ts`                | Decimal strings and integer base units               | Why is money a `bigint`?                             |
 | `src/solana/rpc.ts`                    | RPC client creation and error conversion             | How are node failures reported?                      |
 | `src/solana/tokens.ts`                 | Parsed SPL and Token-2022 accounts                   | What does `token list` read?                         |
+| `src/solana/known-tokens.ts`           | Code-owned token symbol to cluster-scoped mint map   | Why is `usdc` a safe shortcut?                       |
 | `src/wallet/keystore.ts`               | Key parsing, encryption, atomic persistence          | Where is key material handled?                       |
 | `src/wallet/store.ts`                  | UUID keystores, public registry, and writer lock     | How are aliases mapped safely to keys?               |
 | `src/wallet/signer.ts`                 | Lazy keystore unlock and transaction signing         | When can the private key be used?                    |

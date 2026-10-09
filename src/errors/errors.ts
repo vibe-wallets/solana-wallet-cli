@@ -106,8 +106,14 @@ export class StakeAccountError extends AppError {
 }
 
 export class UnsupportedTokenExtensionError extends AppError {
-  constructor(message: string) {
-    super(message, "UnsupportedTokenExtensionError", 2);
+  constructor(message: string, details?: unknown) {
+    super(message, "UnsupportedTokenExtensionError", 2, details);
+  }
+}
+
+export class TokenMetadataMismatchError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, "TokenMetadataMismatchError", 2, details);
   }
 }
 

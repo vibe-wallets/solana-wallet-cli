@@ -9,6 +9,11 @@ import {
 import { color } from "../output/terminal.js";
 import { assertRpcCluster, rpcRequest } from "../solana/rpc.js";
 import { aggregateTokenAccounts, getTokenAccounts } from "../solana/tokens.js";
+import {
+  knownTokenDeployments,
+  knownTokenForMint,
+  resolveTokenIdentifier,
+} from "../solana/known-tokens.js";
 import { listValidators } from "../solana/validators.js";
 import { readHistory } from "../shell/history.js";
 import { resolveWallet, type SelectedWallet } from "../wallet/store.js";
@@ -106,28 +111,44 @@ export async function showTokenList(
     ok: true,
     address: wallet,
     cluster: context.config.cluster,
-    accounts,
+    accounts: accounts.map((account) => {
+      const symbol = knownTokenForMint(
+        account.mint,
+        context.config.cluster,
+      )?.displaySymbol;
+      return symbol ? { ...account, symbol } : account;
+    }),
   };
   const balances = aggregateTokenAccounts(accounts);
+  const symbolFor = (mint: string) =>
+    knownTokenForMint(mint, context.config.cluster)?.displaySymbol ?? "—";
   const tokenRows = balances.length
     ? includeAccounts
       ? table(
           accounts.map((account) => [
+            symbolFor(account.mint),
             account.mint,
             account.uiAmount,
             account.program,
             account.address,
           ]),
-          ["MINT", "ACCOUNT BALANCE", "TOKEN PROGRAM", "TOKEN ACCOUNT"],
+          [
+            "SYMBOL",
+            "MINT",
+            "ACCOUNT BALANCE",
+            "TOKEN PROGRAM",
+            "TOKEN ACCOUNT",
+          ],
         )
       : table(
           balances.map((balance) => [
+            symbolFor(balance.mint),
             balance.mint,
             balance.amount,
             balance.program,
             String(balance.accountCount),
           ]),
-          ["MINT", "BALANCE", "TOKEN PROGRAM", "ACCOUNTS"],
+          ["SYMBOL", "MINT", "BALANCE", "TOKEN PROGRAM", "ACCOUNTS"],
         )
     : "No SPL or Token-2022 token accounts found.";
   context.output.print(
@@ -142,9 +163,15 @@ export async function showTokenList(
 
 export async function showTokenBalance(
   context: CommandContext,
-  mint: string,
+  mintValue: string,
 ): Promise<void> {
   const wallet = await requireWallet(context);
+  const resolved = resolveTokenIdentifier(mintValue, context.config.cluster);
+  const mint = String(resolved.mint);
+  const mintLabel = resolved.token
+    ? `${resolved.token.displaySymbol} (${mint})`
+    : mint;
+  const symbol = resolved.token ? { symbol: resolved.token.displaySymbol } : {};
   const rpc = context.getClient().rpc;
   await assertRpcCluster(rpc, context.config.cluster);
   const accounts = await getTokenAccounts(
@@ -161,6 +188,7 @@ export async function showTokenBalance(
       ok: true,
       address: wallet,
       mint,
+      ...symbol,
       rawAmount: "0",
       decimals: null,
       amount: "0",
@@ -171,7 +199,7 @@ export async function showTokenBalance(
         sectionTitle("TOKEN BALANCE"),
         keyValueRows([
           ["Network", networkLabel(context.config.cluster)],
-          ["Mint", mint],
+          ["Mint", mintLabel],
           ["Balance", "0", "emphasis"],
           ["Account", "No token account found for this mint."],
         ]),
@@ -185,6 +213,7 @@ export async function showTokenBalance(
       ok: true,
       address: wallet,
       mint,
+      ...symbol,
       rawAmount: balance.rawAmount,
       decimals: balance.decimals,
       amount: balance.amount,
@@ -194,13 +223,56 @@ export async function showTokenBalance(
       sectionTitle("TOKEN BALANCE"),
       keyValueRows([
         ["Network", networkLabel(context.config.cluster)],
-        ["Mint", mint],
+        ["Mint", mintLabel],
         ["Balance", balance.amount, "emphasis"],
         ["Token accounts", String(balance.accountCount)],
         ...(context.output.verbose
           ? [["Raw amount", String(balance.rawAmount)] as const]
           : []),
       ]),
+    ].join("\n"),
+  );
+}
+
+/** List the code-owned token symbols usable on the active cluster. */
+export async function showTokenSymbols(context: CommandContext): Promise<void> {
+  const deployments = knownTokenDeployments(context.config.cluster);
+  const data = {
+    ok: true,
+    cluster: context.config.cluster,
+    symbols: deployments.map(({ token, deployment }) => ({
+      symbol: token.symbol,
+      displaySymbol: token.displaySymbol,
+      name: token.name,
+      mint: String(deployment.mint),
+      program: deployment.program,
+      decimals: deployment.decimals,
+      ...(deployment.testOnly ? { testOnly: true } : {}),
+    })),
+  };
+  const tokenRows = deployments.length
+    ? table(
+        deployments.map(({ token, deployment }) => [
+          deployment.testOnly
+            ? `${token.displaySymbol} (test)`
+            : token.displaySymbol,
+          token.name,
+          String(deployment.mint),
+          deployment.program,
+          String(deployment.decimals),
+        ]),
+        ["SYMBOL", "NAME", "TOKEN MINT", "PROGRAM", "DECIMALS"],
+      )
+    : `No built-in token symbols are available on ${context.config.cluster}. Pass a full mint address instead.`;
+  context.output.print(
+    data,
+    [
+      sectionTitle(`TOKEN SYMBOLS · ${context.config.cluster.toUpperCase()}`),
+      tokenRows,
+      "Symbols are local aliases for fixed mint addresses. The full mint is the on-chain identity; program and decimals are verified against chain data when a command uses a symbol.",
+      ...(deployments.some(({ deployment }) => deployment.testOnly)
+        ? ["(test) marks a development-only token, not real funds."]
+        : []),
     ].join("\n"),
   );
 }

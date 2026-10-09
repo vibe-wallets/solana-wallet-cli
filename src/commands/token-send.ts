@@ -19,6 +19,7 @@ import {
   InsufficientBalanceError,
   SimulationError,
   UnsupportedTokenExtensionError,
+  TokenMetadataMismatchError,
   ConfirmationError,
   TransactionRejectedError,
   RpcError,
@@ -35,6 +36,7 @@ import {
   TOKEN_2022_PROGRAM_ADDRESS,
   TOKEN_PROGRAM_ADDRESS,
 } from "../solana/tokens.js";
+import { resolveTokenIdentifier } from "../solana/known-tokens.js";
 import { parseAddress } from "../wallet/address.js";
 import { EncryptedKeystoreSigner } from "../wallet/signer.js";
 import { requireSelectedWallet, requireWallet } from "./read-only.js";
@@ -68,11 +70,35 @@ export async function sendToken(
 ): Promise<void> {
   const owner = await requireWallet(context);
   const selectedWallet = await requireSelectedWallet(context);
-  const mint = parseAddress(mintValue);
+  const resolved = resolveTokenIdentifier(mintValue, context.config.cluster);
+  const mint = resolved.mint;
+  const mintLabel = resolved.token
+    ? `${resolved.token.displaySymbol} (${mint})`
+    : String(mint);
   const destinationOwner = parseAddress(destinationValue);
   const rpc = context.getClient().rpc;
   await assertRpcCluster(rpc, context.config.cluster);
   const mintInfo = await readMint(rpc, mint, context.config.commitment);
+  if (resolved.deployment) {
+    if (mintInfo.program !== resolved.deployment.program)
+      throw new TokenMetadataMismatchError(
+        `${resolved.token!.displaySymbol} (${mint}) is owned by ${mintInfo.program}, but the local token registry expects ${resolved.deployment.program}. Refusing to send.`,
+        {
+          mint,
+          expected: resolved.deployment.program,
+          actual: mintInfo.program,
+        },
+      );
+    if (mintInfo.decimals !== resolved.deployment.decimals)
+      throw new TokenMetadataMismatchError(
+        `${resolved.token!.displaySymbol} (${mint}) reports ${mintInfo.decimals} decimals, but the local token registry expects ${resolved.deployment.decimals}. Refusing to send.`,
+        {
+          mint,
+          expected: resolved.deployment.decimals,
+          actual: mintInfo.decimals,
+        },
+      );
+  }
   if (mintInfo.program !== "spl-token" && mintInfo.program !== "token-2022")
     throw new RpcError(
       `Mint ${mint} is not owned by a supported token program.`,
@@ -210,6 +236,7 @@ export async function sendToken(
     action: "Send token",
     owner,
     mint,
+    ...(resolved.token ? { symbol: resolved.token.displaySymbol } : {}),
     program: mintInfo.program,
     sourceTokenAccounts: sourceAccounts.map(({ account }) => account.address),
     destinationOwner,
@@ -226,7 +253,7 @@ export async function sendToken(
     { ok: true, preflight: summary },
     actionPreview("TOKEN TRANSFER · TRANSACTION PREVIEW", [
       ["Wallet", `${selectedWallet.identity.alias} (${owner})`],
-      ["Token mint", String(mint)],
+      ["Token mint", mintLabel],
       ["Token program", mintInfo.program],
       ["Amount", formatUnits(rawAmount, mintInfo.decimals), "emphasis"],
       ["Destination", String(destinationOwner)],
@@ -260,8 +287,8 @@ export async function sendToken(
     !yes &&
     !(await confirm(
       context.config.cluster === "mainnet"
-        ? `Send ${formatUnits(rawAmount, mintInfo.decimals)} tokens (${shortenAddress(mint)}) from ${selectedWallet.identity.alias} (${shortenAddress(owner)}) to ${shortenAddress(destinationOwner)} on MAINNET?`
-        : `Send ${formatUnits(rawAmount, mintInfo.decimals)} tokens (${shortenAddress(mint)}) from ${selectedWallet.identity.alias} (${shortenAddress(owner)}) to ${shortenAddress(destinationOwner)} on devnet?`,
+        ? `Send ${formatUnits(rawAmount, mintInfo.decimals)} ${resolved.token?.displaySymbol ?? "tokens"} (${shortenAddress(mint)}) from ${selectedWallet.identity.alias} (${shortenAddress(owner)}) to ${shortenAddress(destinationOwner)} on MAINNET?`
+        : `Send ${formatUnits(rawAmount, mintInfo.decimals)} ${resolved.token?.displaySymbol ?? "tokens"} (${shortenAddress(mint)}) from ${selectedWallet.identity.alias} (${shortenAddress(owner)}) to ${shortenAddress(destinationOwner)} on devnet?`,
     ))
   )
     throw new TransactionRejectedError();
@@ -300,7 +327,7 @@ export async function sendToken(
       slot: status.slot,
       signature: String(signature),
       details: [
-        ["Mint", String(mint)],
+        ["Mint", mintLabel],
         ["Amount", `${formatUnits(rawAmount, mintInfo.decimals)} tokens`],
         ["Destination", String(destinationOwner)],
         ["Estimated network fee", `~${formatSol(fee)} SOL`],

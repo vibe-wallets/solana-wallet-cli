@@ -1,6 +1,7 @@
 import { formatSol, formatUnits } from "../solana/amounts.js";
 import { assertRpcCluster, rpcRequest } from "../solana/rpc.js";
 import { aggregateTokenAccounts, getTokenAccounts } from "../solana/tokens.js";
+import { knownTokenForMint } from "../solana/known-tokens.js";
 import {
   keyValueRows,
   networkLabel,
@@ -514,7 +515,9 @@ export async function status(context: CommandContext): Promise<void> {
   let tokenBalances:
     | {
         status: "available";
-        assets: ReturnType<typeof aggregateTokenAccounts>;
+        assets: (ReturnType<typeof aggregateTokenAccounts>[number] & {
+          symbol?: string;
+        })[];
       }
     | { status: "unavailable"; error: string }
     | null = null;
@@ -591,9 +594,15 @@ export async function status(context: CommandContext): Promise<void> {
           ];
           tokenBalances = {
             status: "available",
-            assets: aggregateTokenAccounts(tokenResult.value).filter(
-              (asset) => asset.rawAmount > 0n,
-            ),
+            assets: aggregateTokenAccounts(tokenResult.value)
+              .filter((asset) => asset.rawAmount > 0n)
+              .map((asset) => {
+                const symbol = knownTokenForMint(
+                  asset.mint,
+                  context.config.cluster,
+                )?.displaySymbol;
+                return symbol ? { ...asset, symbol } : asset;
+              }),
           };
         } catch (error) {
           tokenBalances = {
@@ -712,12 +721,13 @@ export async function status(context: CommandContext): Promise<void> {
     tokenBalances?.status === "available" && tokenBalances.assets.length
       ? table(
           tokenBalances.assets.map((asset) => [
+            asset.symbol ?? "—",
             context.output.verbose ? asset.mint : shortenAddress(asset.mint),
             asset.amount,
             asset.program,
             String(asset.accountCount),
           ]),
-          ["TOKEN MINT", "BALANCE", "PROGRAM", "ACCOUNTS"],
+          ["SYMBOL", "TOKEN MINT", "BALANCE", "PROGRAM", "ACCOUNTS"],
         )
       : tokenBalances?.status === "unavailable"
         ? "Unavailable — check the RPC endpoint and retry status."

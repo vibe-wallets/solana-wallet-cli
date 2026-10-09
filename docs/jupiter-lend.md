@@ -29,7 +29,7 @@ All reads and transactions use the selected wallet. Switch with `wallet use
 the alias and full signing address. See [the multiple-wallet guide](multiple-wallets.md)
 for current/default behavior and backups.
 
-Before every operation the adapter requires `mainnet`, verifies the mint is owned by the legacy SPL Token Program, and verifies six decimals. A display symbol or user-selected mint is never used as the asset identity. Borrowing, collateral, leverage, liquidation, arbitrary assets, and arbitrary Jupiter transaction signing are not implemented.
+Before every operation the adapter requires `mainnet`, verifies the mint is owned by the legacy SPL Token Program, and verifies six decimals. A display symbol or user-selected mint is never used as the asset identity. The canonical USDC mint constant is defined once in the shared token registry (`src/solana/known-tokens.ts`) and re-exported by the adapter; the protocol-specific checks remain in the adapter. Borrowing, collateral, leverage, liquidation, arbitrary assets, and arbitrary Jupiter transaction signing are not implemented.
 
 ## SDK boundary
 

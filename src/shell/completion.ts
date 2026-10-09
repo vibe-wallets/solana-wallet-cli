@@ -2,6 +2,7 @@ import { tokenize } from "./parser.js";
 
 export interface CompletionCache {
   tokenMints: string[];
+  knownTokens: string[];
   stakeAccounts: string[];
   recentValidators: string[];
   walletAliases: string[];
@@ -39,7 +40,7 @@ const nested: Record<string, string[]> = {
     "migrate",
     "recover",
   ],
-  token: ["list", "balance", "send"],
+  token: ["list", "symbols", "balance", "send"],
   stake: ["create", "list", "deactivate", "withdraw"],
   "jupiter-lend": ["status", "deposit", "withdraw"],
   tx: ["inspect"],
@@ -96,7 +97,7 @@ export function completeLine(
     )
       candidates = cache.walletAliases;
     else if (command === "token balance" || command === "token send")
-      candidates = cache.tokenMints;
+      candidates = [...cache.knownTokens, ...cache.tokenMints];
     else if (command === "stake deactivate" || command === "stake withdraw")
       candidates = cache.stakeAccounts;
   }

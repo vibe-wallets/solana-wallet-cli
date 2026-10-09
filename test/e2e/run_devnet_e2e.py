@@ -380,6 +380,31 @@ def run(image):
                     f"token balance for {mint} was not the minted amount",
                 )
 
+            symbols = success(directory, image, "token symbols")
+            devnet_usdc = next(
+                (
+                    entry
+                    for entry in symbols.get("symbols", [])
+                    if entry.get("symbol") == "usdc"
+                ),
+                None,
+            )
+            require(
+                devnet_usdc is not None
+                and devnet_usdc.get("mint")
+                == "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+                and devnet_usdc.get("testOnly") is True,
+                "token symbols did not expose the Devnet USDC test mapping",
+            )
+            symbol_balance = success(directory, image, "token balance usdc")
+            require(
+                symbol_balance.get("mint") == devnet_usdc["mint"],
+                "token balance usdc did not resolve to the Devnet USDC mint",
+            )
+            print(
+                "PASS: token symbols and symbol-based balance resolution use the Devnet mapping"
+            )
+
             validator = selected_validators[0]["voteAccount"]
             stake_amount = amount_from_lamports(fixtures["minimumDelegationLamports"])
             send_before = method_count(proxy, "sendTransaction")

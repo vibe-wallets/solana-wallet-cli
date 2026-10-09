@@ -3,6 +3,7 @@ import { createClient, type SolanaClient } from "../solana/client.js";
 import { Output, type OutputOptions } from "../output/output.js";
 import type { CompletionCache } from "../shell/completion.js";
 import { readSecret } from "../shell/prompt.js";
+import { knownTokenSymbols } from "../solana/known-tokens.js";
 import type { SelectedWallet } from "../wallet/store.js";
 import type { AppError } from "../errors/errors.js";
 
@@ -45,6 +46,7 @@ export function createCommandContext(
     ),
     completion: {
       tokenMints: [],
+      knownTokens: knownTokenSymbols(config.cluster),
       stakeAccounts: [],
       recentValidators: [],
       walletAliases: [],

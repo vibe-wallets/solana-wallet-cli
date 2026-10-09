@@ -59,8 +59,11 @@ terminal, a table changes to labeled rows instead of clipping long values.
 This is especially useful for vote-account and stake-account addresses: the
 complete value remains visible and copyable. The `status` token-mint column is
 shortened by default to make the token easier to recognize; use `token list` or
-JSON when you need exact mint/account identifiers. `--verbose` expands technical
-fields where supported.
+JSON when you need exact mint/account identifiers. Token tables include a
+`SYMBOL` column that labels mints found in the built-in registry; an unknown
+mint shows `—` and is still identified by its full address. `token symbols`
+prints the built-in aliases as a table with their canonical mints.
+`--verbose` expands technical fields where supported.
 
 Section headings, labels, and aligned columns are shared across wallet details,
 balances, validator/stake tables, transaction previews, and transaction

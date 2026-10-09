@@ -90,8 +90,11 @@ the CLI read the rates used for that estimate.
 - `balance` shows the human SOL amount. Exact lamports are available in JSON,
   or in human output when the process is started with `--verbose`.
 - `token list` aggregates balances for each mint. `--accounts` expands the
-  output to show each account. `token balance <mint>` shows the mint, total,
-  account count, and (with `--verbose`) raw integer amount.
+  output to show each account. A `SYMBOL` column labels mints found in the
+  built-in registry; unknown mints show `—` and remain identified by address.
+  `token balance <mint|symbol>` shows the mint, total, account count, and (with
+  `--verbose`) raw integer amount. `token symbols` lists the built-in symbols
+  and the exact mint each resolves to on the current network.
 - `validators` is a table sorted by activated stake. It shows status,
   commission, stake, and the full vote-account address required by
   `stake create`.
@@ -105,9 +108,12 @@ the CLI read the rates used for that estimate.
   signers, instruction count, and an explorer link. Add `--json` for the full
   RPC transaction response.
 
-Token symbols are not guessed from arbitrary on-chain metadata. If a mint is
-not otherwise recognized, its address is the token's identifier. The full mint
-is retained in `token list` and JSON output.
+Token symbols are not guessed from arbitrary on-chain metadata. The only
+symbols are the small, code-owned registry exposed by `token symbols`; each is
+an alias for one exact, cluster-scoped mint address. An unrecognized symbol
+errors instead of falling back to a guess, and a mint with no registry entry
+keeps its full address as its identifier. The full mint is retained in previews,
+receipts, `token list`, and JSON output.
 
 ## Transaction previews and receipts
 
